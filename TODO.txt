@@ -1,0 +1,6 @@
+1. Change layers for content loss
+2. Change layers for style loss
+3. Change relative weights between style and content loss
+4. Change architecture of the network
+
+For each setting, visualise output for K (content, style) pairs. Figure out changes in the output for each setting.
