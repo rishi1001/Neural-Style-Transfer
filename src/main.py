@@ -59,6 +59,7 @@ import matplotlib.pyplot as plt
 
 import torchvision.transforms as transforms
 import torchvision.models as models
+import argparse
 
 import copy
 
@@ -110,8 +111,25 @@ def image_loader(image_name):
     return image.to(device, torch.float)
 
 
-style_img = image_loader("../data/picasso.jpg")
-content_img = image_loader("../data/anjali.jpg")
+## SETUP USING MAKE
+parser = argparse.ArgumentParser(
+    description="Command Line Arguments",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+)
+parser.add_argument('--style_img', type=str, default='../data/picasso.jpg', help='path to style image')
+parser.add_argument('--content_img', type=str, default='../data/dancing.jpg', help='path to content image')
+parser.add_argument('--epochs', type=int, default=100, help='Number of epochs train')
+parser.add_argument('--model',type=str,default='vgg', help='pretrained model to use')
+parser.add_argument('--content_layers',type=str,nargs='+',default='conv_4', help='content layers to use')
+parser.add_argument('--style_layers',type=str,default='conv_1 conv_2 conv_3 conv_4 conv_5', help='style layers to use')
+# parser.add_argument('--trained_on',type=str,default='gap', help='Use whether gcnconv or gatconv')
+# parser.add_argument('--need_training',type=str,default='false', help='training or testing')
+
+args = parser.parse_args()
+
+
+style_img = image_loader(args.style_img)
+content_img = image_loader(args.content_img)
 
 print(style_img.size())
 print(content_img.size())
@@ -265,7 +283,8 @@ class StyleLoss(nn.Module):
 # network to evaluation mode using ``.eval()``.
 # 
 
-cnn = models.vgg19(pretrained=True).features.to(device).eval()
+if args.model=='vgg':
+    cnn = models.vgg19(pretrained=True).features.to(device).eval()
 
 
 
@@ -304,8 +323,8 @@ class Normalization(nn.Module):
 # 
 
 # desired depth layers to compute style/content losses :
-content_layers_default = ['conv_4']
-style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
+content_layers_default = args.content_layers
+style_layers_default = args.style_layers
 
 def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
                                style_img, content_img,
@@ -473,8 +492,7 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
 # Finally, we can run the algorithm.
 # 
 
-output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std,
-                            content_img, style_img, input_img)
+output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std, content_img, style_img, input_img)
 
 plt.figure()
 imshow(output, title='Output Image')
