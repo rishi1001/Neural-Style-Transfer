@@ -60,6 +60,7 @@ import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 import torchvision.models as models
 import argparse
+import os
 
 import copy
 
@@ -116,8 +117,9 @@ parser = argparse.ArgumentParser(
     description="Command Line Arguments",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 )
-parser.add_argument('--style_img', type=str, default='../data/picasso.jpg', help='path to style image')
-parser.add_argument('--content_img', type=str, default='../data/dancing.jpg', help='path to content image')
+# parser.add_argument('--style_img', type=str, default='../data/picasso.jpg', help='path to style image')
+# parser.add_argument('--content_img', type=str, default='../data/dancing.jpg', help='path to content image')
+parser.add_argument('--folder', type=str, default='1', help='path to content, style image folders')
 parser.add_argument('--epochs', type=int, default=100, help='Number of epochs train')
 parser.add_argument('--model',type=str,default='vgg', help='pretrained model to use')
 parser.add_argument('--content_layers',type=str,nargs='+',default='conv_4', help='content layers to use')
@@ -127,9 +129,16 @@ parser.add_argument('--style_layers',type=str,default='conv_1 conv_2 conv_3 conv
 
 args = parser.parse_args()
 
+style_img_path = '../data/'+args.folder+'/style.jpg'
+content_img_path = '../data/'+args.folder+'/content.jpg'
+result_img_path = '../results/'+args.folder+'/'+str(args.model)+'_result.jpg'       # TODO change this path acc to params
+print(result_img_path, style_img_path, content_img_path)
+os.makedirs('../results/'+args.folder, exist_ok=True)
 
-style_img = image_loader(args.style_img)
-content_img = image_loader(args.content_img)
+show_img = False
+
+style_img = image_loader(style_img_path)
+content_img = image_loader(content_img_path)
 
 print(style_img.size())
 print(content_img.size())
@@ -157,11 +166,22 @@ def imshow(tensor, title=None):
     plt.pause(0.001) # pause a bit so that plots are updated
 
 
-plt.figure()
-imshow(style_img, title='Style Image')
+# save an image
+def imsave(tensor,path, title=None):
+    image = tensor.cpu().clone()  # we clone the tensor to not do changes on it
+    image = image.squeeze(0)      # remove the fake batch dimension
+    image = unloader(image)
+    if title is not None:
+        plt.title(title)
+    image.save(path)
 
-plt.figure()
-imshow(content_img, title='Content Image')
+
+if show_img:
+    plt.figure()
+    imshow(style_img, title='Style Image')
+
+    plt.figure()
+    imshow(content_img, title='Content Image')
 
 ######################################################################
 # Loss Functions
@@ -494,9 +514,14 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
 
 output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std, content_img, style_img, input_img)
 
-plt.figure()
-imshow(output, title='Output Image')
+if show_img:
+    plt.figure()
+    imshow(output, title='Output Image')
 
-# sphinx_gallery_thumbnail_number = 4
-plt.ioff()
-plt.show()
+    # sphinx_gallery_thumbnail_number = 4
+    plt.ioff()
+    plt.show()
+
+plt.figure()
+print(result_img_path)
+imsave(output,path=result_img_path , title='Output Image')

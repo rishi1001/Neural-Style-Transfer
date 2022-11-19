@@ -1,8 +1,10 @@
-style_img = samples_cora_100
-content_img = coefficients
+style_img = ../data/picasso.jpg
+content_img = ../data/dancing.jpg
 epochs = 1000
 training=true
-model=gcn
-trained_on=gap
+model=vgg
+content_layers = conv_4
+style_layers = 'conv_1 conv_2 conv_3 conv_4 conv_5'
+folder = 1
 Run:
-	python3 main.py --train $(train) --epochs $(epochs) --model $(model) --need_training $(training) --trained_on=$(trained_on)
+	python3 main.py --folder $(folder) --epochs $(epochs) --model $(model) --content_layers $(content_layers) --style_layers $(style_layers) 
