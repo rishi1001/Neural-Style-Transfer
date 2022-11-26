@@ -99,8 +99,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #     with name ``images`` in your current working directory.
 
 # desired size of the output image
-imsize = 512 if torch.cuda.is_available() else 128  # use small size if no gpu
-# imsize = 512 ( wont work on CPU)
+# imsize = 512 if torch.cuda.is_available() else 128  # use small size if no gpu
+# print(imsize)
+imsize = 512
 
 loader = transforms.Compose([
     transforms.Resize(imsize),  # scale imported image
@@ -130,6 +131,7 @@ parser.add_argument('--model',type=str,default='vgg', help='pretrained model to 
 parser.add_argument('--content_layers',type=str,nargs='+',default='conv_4', help='content layers to use')
 parser.add_argument('--style_layers',type=str,default='conv_1 conv_2 conv_3 conv_4 conv_5', help='style layers to use')
 parser.add_argument('--show_img',type=str,default='false', help='see images')
+parser.add_argument('--style_weight',type=int,default=1000000, help='setup weights')
 # parser.add_argument('--trained_on',type=str,default='gap', help='Use whether gcnconv or gatconv')
 # parser.add_argument('--need_training',type=str,default='false', help='training or testing')
 
@@ -137,9 +139,9 @@ args = parser.parse_args()
 
 style_img_path = '../data/'+args.folder+'/style.jpg'
 content_img_path = '../data/'+args.folder+'/content.jpg'
-result_img_path = '../results/'+args.folder+'/'+str(args.model)+'_result.jpg'       # TODO change this path acc to params
+result_img_path = '../style_weight/'+args.folder+'/'       # TODO change this path acc to params
 print(result_img_path, style_img_path, content_img_path)
-os.makedirs('../results/'+args.folder, exist_ok=True)
+os.makedirs('../style_weight/'+args.folder, exist_ok=True)
 
 
 show_img = True if args.show_img.lower() == 'true' else False
@@ -189,13 +191,6 @@ def imsave(tensor,path, title=None):
         plt.title(title)
     image.save(path)
 
-
-# if show_img:
-#     plt.figure()
-#     imshow(style_img, title='Style Image')
-
-#     plt.figure()
-#     imshow(content_img, title='Content Image')
 
 ######################################################################
 # Loss Functions
@@ -501,12 +496,24 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
             loss = style_score + content_score
             loss.backward()
 
-            run[0] += 1
-            if run[0] % 50 == 0:
+            if run[0] % 10 == 0:
                 print("run {}:".format(run))
                 print('Style Loss : {:4f} Content Loss: {:4f}'.format(
                     style_score.item(), content_score.item()))
-                print()
+                # print("Saving Output Image")
+
+                # plt.figure()
+                # toSavePath = result_img_path+'_'+str(run[0])+'_result.jpg'
+                # print(toSavePath)
+                # with torch.no_grad():
+                #     output = input_img.clone().clamp_(0,1)
+                #     imsave(output,path=toSavePath , title='Output Image')
+                #     plt.close()
+                # exit(0)
+
+            run[0] += 1
+            
+
 
             return style_score + content_score
 
@@ -523,7 +530,7 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
 # Finally, we can run the algorithm.
 # 
 
-output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std, content_img, style_img, input_img)
+output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std, content_img, style_img, input_img, num_steps = args.epochs, style_weight=args.style_weight)
 
 if show_img:
     plt.figure()
@@ -541,4 +548,5 @@ if show_img:
 
 plt.figure()
 print(result_img_path)
+result_img_path = result_img_path +str(args.style_weight)+'_result.jpg'
 imsave(output,path=result_img_path , title='Output Image')
