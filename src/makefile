@@ -6,7 +6,7 @@ style_layers = 'conv_1 conv_2 conv_3 conv_4 conv_5'
 # style_layers = 'conv_5'
 folder = 2
 show_img = false
-style_weight = 1
+style_weight = 1000000
 run:
 	for folder in 1 2 3 4 5 6; do \
 		python3 main.py --folder $$folder --epochs $(epochs) --model $(model) --content_layers $(content_layers) --style_layers $(style_layers) --show_img $(show_img) --style_weight $(style_weight); \
