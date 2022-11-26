@@ -58,6 +58,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 import torchvision.transforms as transforms
+import torchvision.transforms.functional as fn
 import torchvision.models as models
 import argparse
 import os
@@ -99,6 +100,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # desired size of the output image
 imsize = 512 if torch.cuda.is_available() else 128  # use small size if no gpu
+# imsize = 512 ( wont work on CPU)
 
 loader = transforms.Compose([
     transforms.Resize(imsize),  # scale imported image
@@ -107,7 +109,10 @@ loader = transforms.Compose([
 
 def image_loader(image_name):
     image = Image.open(image_name)
+    print("original image", image.size)
     # fake batch dimension required to fit network's input dimensions
+    # crop image
+    # image = fn.center_crop(image, (imsize, imsize))
     image = loader(image).unsqueeze(0)
     return image.to(device, torch.float)
 
@@ -124,6 +129,7 @@ parser.add_argument('--epochs', type=int, default=100, help='Number of epochs tr
 parser.add_argument('--model',type=str,default='vgg', help='pretrained model to use')
 parser.add_argument('--content_layers',type=str,nargs='+',default='conv_4', help='content layers to use')
 parser.add_argument('--style_layers',type=str,default='conv_1 conv_2 conv_3 conv_4 conv_5', help='style layers to use')
+parser.add_argument('--show_img',type=str,default='false', help='see images')
 # parser.add_argument('--trained_on',type=str,default='gap', help='Use whether gcnconv or gatconv')
 # parser.add_argument('--need_training',type=str,default='false', help='training or testing')
 
@@ -135,13 +141,21 @@ result_img_path = '../results/'+args.folder+'/'+str(args.model)+'_result.jpg'   
 print(result_img_path, style_img_path, content_img_path)
 os.makedirs('../results/'+args.folder, exist_ok=True)
 
-show_img = False
+
+show_img = True if args.show_img.lower() == 'true' else False
 
 style_img = image_loader(style_img_path)
 content_img = image_loader(content_img_path)
 
 print(style_img.size())
 print(content_img.size())
+
+# CROP the images(according to imsize)
+style_img = fn.center_crop(style_img, (imsize, imsize))
+content_img = fn.center_crop(content_img, (imsize, imsize))
+# print(style_img.size())
+# print(content_img.size())
+# exit(0)
 assert style_img.size() == content_img.size(), \
     "we need to import style and content images of the same size"
 
@@ -176,12 +190,12 @@ def imsave(tensor,path, title=None):
     image.save(path)
 
 
-if show_img:
-    plt.figure()
-    imshow(style_img, title='Style Image')
+# if show_img:
+#     plt.figure()
+#     imshow(style_img, title='Style Image')
 
-    plt.figure()
-    imshow(content_img, title='Content Image')
+#     plt.figure()
+#     imshow(content_img, title='Content Image')
 
 ######################################################################
 # Loss Functions
@@ -415,9 +429,6 @@ input_img = content_img.clone()
 # if you want to use white noise instead uncomment the below line:
 # input_img = torch.randn(content_img.data.size(), device=device)
 
-# add the original input image to the figure:
-plt.figure()
-imshow(input_img, title='Input Image')
 
 
 ######################################################################
@@ -517,6 +528,12 @@ output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std, 
 if show_img:
     plt.figure()
     imshow(output, title='Output Image')
+
+    plt.figure()
+    imshow(style_img, title='Style Image')
+
+    plt.figure()
+    imshow(content_img, title='Content Image')
 
     # sphinx_gallery_thumbnail_number = 4
     plt.ioff()
