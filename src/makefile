@@ -1,5 +1,3 @@
-style_img = ../data/picasso.jpg
-content_img = ../data/dancing.jpg
 epochs = 1000
 training=true
 model=vgg
