@@ -63,8 +63,6 @@ import torchvision.models as models
 import argparse
 import os
 
-import copy
-
 
 ######################################################################
 # Next, we need to choose which device to run the network on and import the
@@ -99,9 +97,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #     with name ``images`` in your current working directory.
 
 # desired size of the output image
-# imsize = 512 if torch.cuda.is_available() else 128  # use small size if no gpu
+imsize = 512 if torch.cuda.is_available() else 128  # use small size if no gpu
 # print(imsize)
-imsize = 512
+# imsize = 512
 
 loader = transforms.Compose([
     transforms.Resize(imsize),  # scale imported image
@@ -139,9 +137,9 @@ args = parser.parse_args()
 
 style_img_path = '../data/'+args.folder+'/style.jpg'
 content_img_path = '../data/'+args.folder+'/content.jpg'
-result_img_path = '../style_weight/'+args.folder+'/'       # TODO change this path acc to params
+result_img_path = '../start_random/'+args.folder+'/'       # TODO change this path acc to params
 print(result_img_path, style_img_path, content_img_path)
-os.makedirs('../style_weight/'+args.folder, exist_ok=True)
+os.makedirs('../start_random/'+args.folder, exist_ok=True)
 
 
 show_img = True if args.show_img.lower() == 'true' else False
@@ -314,6 +312,11 @@ class StyleLoss(nn.Module):
 
 if args.model=='vgg':
     cnn = models.vgg19(pretrained=True).features.to(device).eval()
+elif args.model=='resnet':
+    # cnn = models.resnet50(pretrained=True).features.to(device).eval()
+    cnn = models.resnet50(pretrained=True).to(device).eval()
+elif args.model=='inception_v3':
+    cnn = models.inception_v3(pretrained=True).to(device).eval()
 
 
 
@@ -372,6 +375,8 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
     model = nn.Sequential(normalization)
 
     i = 0  # increment every time we see a conv
+    # print(cnn)
+    # exit(0)
     for layer in cnn.children():
         if isinstance(layer, nn.Conv2d):
             i += 1
@@ -386,6 +391,12 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
             name = 'pool_{}'.format(i)
         elif isinstance(layer, nn.BatchNorm2d):
             name = 'bn_{}'.format(i)
+        # elif isinstance(layer, nn.Sequential):
+        #     name = 'sequential_{}'.format(i)
+        # elif isinstance(layer, nn.AdaptiveAvgPool2d):
+        #     name = 'adaptiveavgpool_{}'.format(i)
+        # elif isinstance(layer, nn.Linear):
+        #     name = 'linear_{}'.format(i)
         else:
             raise RuntimeError('Unrecognized layer: {}'.format(layer.__class__.__name__))
 
@@ -420,9 +431,9 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
 # or white noise.
 # 
 
-input_img = content_img.clone()
+# input_img = content_img.clone()
 # if you want to use white noise instead uncomment the below line:
-# input_img = torch.randn(content_img.data.size(), device=device)
+input_img = torch.randn(content_img.data.size(), device=device)
 
 
 
@@ -496,19 +507,19 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
             loss = style_score + content_score
             loss.backward()
 
-            if run[0] % 10 == 0:
+            if run[0] % 100 == 0:
                 print("run {}:".format(run))
                 print('Style Loss : {:4f} Content Loss: {:4f}'.format(
                     style_score.item(), content_score.item()))
-                # print("Saving Output Image")
+                print("Saving Output Image")
 
-                # plt.figure()
-                # toSavePath = result_img_path+'_'+str(run[0])+'_result.jpg'
-                # print(toSavePath)
-                # with torch.no_grad():
-                #     output = input_img.clone().clamp_(0,1)
-                #     imsave(output,path=toSavePath , title='Output Image')
-                #     plt.close()
+                plt.figure()
+                toSavePath = result_img_path+'_'+str(run[0])+'_result.jpg'
+                print(toSavePath)
+                with torch.no_grad():
+                    output = input_img.clone().clamp_(0,1)
+                    imsave(output,path=toSavePath , title='Output Image')
+                    plt.close()
                 # exit(0)
 
             run[0] += 1
@@ -548,5 +559,5 @@ if show_img:
 
 plt.figure()
 print(result_img_path)
-result_img_path = result_img_path +str(args.style_weight)+'_result.jpg'
+result_img_path = result_img_path+'result.jpg'
 imsave(output,path=result_img_path , title='Output Image')

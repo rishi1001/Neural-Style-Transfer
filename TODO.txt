@@ -1,7 +1,9 @@
 0. Num Epochs   -> Done
-1. Change layers for content loss
+1. Change layers for content loss -> Not Required?
 2. Change layers for style loss    -> Done
 3. Change relative weights between style and content loss  -> Done 
-4. Change architecture of the network
+4. Change architecture of the network -> Tough (Need some work) tried -> vgg, resnet, inception_v3
+5. Start from random image
+6. 
 
 For each setting, visualise output for K (content, style) pairs. Figure out changes in the output for each setting.
