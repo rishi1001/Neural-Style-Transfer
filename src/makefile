@@ -1,4 +1,4 @@
-epochs = 1000
+epochs =700
 training=true
 model=vgg
 content_layers = conv_4 		# vgg

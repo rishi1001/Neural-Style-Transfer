@@ -137,9 +137,9 @@ args = parser.parse_args()
 
 style_img_path = '../data/'+args.folder+'/style.jpg'
 content_img_path = '../data/'+args.folder+'/content.jpg'
-result_img_path = '../start_random/'+args.folder+'/'       # TODO change this path acc to params
+result_img_path = '../high_weight_random/'+args.folder+'/'       # TODO change this path acc to params
 print(result_img_path, style_img_path, content_img_path)
-os.makedirs('../start_random/'+args.folder, exist_ok=True)
+os.makedirs('../high_weight_random/'+args.folder, exist_ok=True)
 
 
 show_img = True if args.show_img.lower() == 'true' else False
@@ -507,19 +507,19 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
             loss = style_score + content_score
             loss.backward()
 
-            if run[0] % 100 == 0:
+            if run[0] % 10 == 0:
                 print("run {}:".format(run))
                 print('Style Loss : {:4f} Content Loss: {:4f}'.format(
                     style_score.item(), content_score.item()))
-                print("Saving Output Image")
+                # print("Saving Output Image")
 
-                plt.figure()
-                toSavePath = result_img_path+'_'+str(run[0])+'_result.jpg'
-                print(toSavePath)
-                with torch.no_grad():
-                    output = input_img.clone().clamp_(0,1)
-                    imsave(output,path=toSavePath , title='Output Image')
-                    plt.close()
+                # plt.figure()
+                # toSavePath = result_img_path+'_'+str(run[0])+'_result.jpg'
+                # print(toSavePath)
+                # with torch.no_grad():
+                #     output = input_img.clone().clamp_(0,1)
+                #     imsave(output,path=toSavePath , title='Output Image')
+                #     plt.close()
                 # exit(0)
 
             run[0] += 1
@@ -559,5 +559,5 @@ if show_img:
 
 plt.figure()
 print(result_img_path)
-result_img_path = result_img_path+'result.jpg'
+result_img_path = result_img_path+str(args.style_weight)+'_result.jpg'
 imsave(output,path=result_img_path , title='Output Image')
