@@ -137,9 +137,9 @@ args = parser.parse_args()
 
 style_img_path = '../data/'+args.folder+'/style.jpg'
 content_img_path = '../data/'+args.folder+'/content.jpg'
-result_img_path = '../high_weight_random/'+args.folder+'/'       # TODO change this path acc to params
+result_img_path = '../content_layers/'+args.folder+'/'       # TODO change this path acc to params
 print(result_img_path, style_img_path, content_img_path)
-os.makedirs('../high_weight_random/'+args.folder, exist_ok=True)
+os.makedirs('../content_layers/'+args.folder, exist_ok=True)
 
 
 show_img = True if args.show_img.lower() == 'true' else False
@@ -392,6 +392,7 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
         elif isinstance(layer, nn.BatchNorm2d):
             name = 'bn_{}'.format(i)
         # elif isinstance(layer, nn.Sequential):
+        #     i += 1
         #     name = 'sequential_{}'.format(i)
         # elif isinstance(layer, nn.AdaptiveAvgPool2d):
         #     name = 'adaptiveavgpool_{}'.format(i)
@@ -401,6 +402,7 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
             raise RuntimeError('Unrecognized layer: {}'.format(layer.__class__.__name__))
 
         model.add_module(name, layer)
+        print(i,layer)
 
         if name in content_layers:
             # add content loss:
@@ -559,5 +561,6 @@ if show_img:
 
 plt.figure()
 print(result_img_path)
-result_img_path = result_img_path+str(args.style_weight)+'_result.jpg'
+print(content_layers_default)
+result_img_path = result_img_path+str(content_layers_default)+'_result.jpg'
 imsave(output,path=result_img_path , title='Output Image')
