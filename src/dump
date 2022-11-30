@@ -1,3 +1,0 @@
-for folder in 1 ; do \
-		python3 main.py --folder $folder --epochs 500 --model googlenet --content_layers other_4			 --style_layers 'other_4 other_5 other_6'   --show_img false --style_weight 10000; \
-	done 

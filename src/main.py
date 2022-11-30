@@ -308,7 +308,7 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
             loss = style_score + content_score
             loss.backward()
 
-            if run[0] % 10 == 0:
+            if run[0] % 50 == 0:
                 print("run {}:".format(run))
                 print('Style Loss : {:4f} Content Loss: {:4f}'.format(
                     style_score.item(), content_score.item()))
@@ -361,5 +361,5 @@ if show_img:
 plt.figure()
 print(result_img_path)
 print(content_layers_default)
-result_img_path = result_img_path+str(args.model)+'_result.jpg'
+result_img_path = result_img_path+str(args.model)+'_1000000'+'_result.jpg'
 imsave(output,path=result_img_path , title='Output Image')
