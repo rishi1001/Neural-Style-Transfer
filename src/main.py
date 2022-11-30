@@ -137,9 +137,9 @@ args = parser.parse_args()
 
 style_img_path = '../data/'+args.folder+'/style.jpg'
 content_img_path = '../data/'+args.folder+'/content.jpg'
-result_img_path = '../start_random/'+args.folder+'/'       # TODO change this path acc to params
+result_img_path = '../data/'+args.folder+'/'       # TODO change this path acc to params
 print(result_img_path, style_img_path, content_img_path)
-os.makedirs('../start_random/'+args.folder, exist_ok=True)
+os.makedirs('../data/'+args.folder, exist_ok=True)
 
 
 show_img = True if args.show_img.lower() == 'true' else False
