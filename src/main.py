@@ -60,9 +60,9 @@ args = parser.parse_args()
 
 style_img_path = '../data/'+args.folder+'/style.jpg'
 content_img_path = '../data/'+args.folder+'/content.jpg'
-result_img_path = '../content_layers/'+args.folder+'/'       # TODO change this path acc to params
+result_img_path = '../diff_models/'+args.folder+'/'       # TODO change this path acc to params
 print(result_img_path, style_img_path, content_img_path)
-os.makedirs('../content_layers/'+args.folder, exist_ok=True)
+os.makedirs('../diff_models/'+args.folder, exist_ok=True)
 
 
 show_img = True if args.show_img.lower() == 'true' else False
@@ -159,8 +159,10 @@ if args.model=='vgg':
 elif args.model=='resnet':
     # cnn = models.resnet50(pretrained=True).features.to(device).eval()
     cnn = models.resnet50(pretrained=True).to(device).eval()
-elif args.model=='inception_v3':
+elif args.model=='inception':
     cnn = models.inception_v3(pretrained=True).to(device).eval()
+elif args.model=='googlenet':
+    cnn = models.googlenet(pretrained=True).to(device).eval()
 
 
 cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(device)
@@ -201,11 +203,11 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
     model = nn.Sequential(normalization)
 
     i = 0  # increment every time we see a conv
-    # print(cnn)
+    print(cnn)
     # exit(0)
     for layer in cnn.children():
         if isinstance(layer, nn.Conv2d):
-            i += 1
+            # i += 1
             name = 'conv_{}'.format(i)
         elif isinstance(layer, nn.ReLU):
             name = 'relu_{}'.format(i)
@@ -214,6 +216,9 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
             name = 'pool_{}'.format(i)
         elif isinstance(layer, nn.BatchNorm2d):
             name = 'bn_{}'.format(i)
+        else:
+            i += 1
+            name='other_{}'.format(i)
         # elif isinstance(layer, nn.Sequential):
         #     i += 1
         #     name = 'sequential_{}'.format(i)
@@ -221,11 +226,11 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
         #     name = 'adaptiveavgpool_{}'.format(i)
         # elif isinstance(layer, nn.Linear):
         #     name = 'linear_{}'.format(i)
-        else:
-            raise RuntimeError('Unrecognized layer: {}'.format(layer.__class__.__name__))
+        # else:
+        #     raise RuntimeError('Unrecognized layer: {}'.format(layer.__class__.__name__))
 
+        print("name: ", name, "layer: ", layer)
         model.add_module(name, layer)
-        print(i,layer)
 
         if name in content_layers:
             # add content loss:
@@ -356,5 +361,5 @@ if show_img:
 plt.figure()
 print(result_img_path)
 print(content_layers_default)
-result_img_path = result_img_path+str(content_layers_default)+'_result.jpg'
+result_img_path = result_img_path+str(args.model)+'_result.jpg'
 imsave(output,path=result_img_path , title='Output Image')
