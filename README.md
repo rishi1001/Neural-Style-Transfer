@@ -1,3 +1,3 @@
 # Neural-Style-Transfer
 
-Change arguments in make and just do make.
+Change arguments in makefile and just do make.
