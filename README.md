@@ -1,6 +1,6 @@
 # Neural-Style-Transfer
 
-We perform various experiments on the vanilla architecture. We provide the inferences from the experiments in the report and the presentations.
+We perform various experiments on the vanilla architecture. We provide the inferences from the experiments in the `Report.pdf` and the `Presentation.pptx`.
 
 To run : Change arguments in makefile and just do make.
 
