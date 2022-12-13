@@ -1,6 +1,8 @@
 # Neural-Style-Transfer
 
-Change arguments in makefile and just do make.
+We perform various experiments on the vanilla architecture. We provide the inferences from the experiments in the report and the presentations.
+
+To run : Change arguments in makefile and just do make.
 
 References - 
 1. A Neural Algorithm for Artistic Style, Gatys et. (https://doi.org/10.48550/arXiv.1508.06576)
